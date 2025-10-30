@@ -1,0 +1,5 @@
+[default]
+entity = xzy-bit-nus
+project = P5_5_dynamics
+base_url = https://api.wandb.ai
+
