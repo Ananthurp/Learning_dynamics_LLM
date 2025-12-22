@@ -2,14 +2,16 @@
 # ============================================================================
 # Environment Setup Script for Learning Dynamics of LLM Finetuning
 # ============================================================================
-# Target System: NVIDIA RTX PRO 6000 (97GB VRAM) with CUDA 13.0
-# This script creates a conda environment optimized for your hardware.
+# Target System: NVIDIA RTX PRO 6000 Blackwell (sm_120) with CUDA 13.0
+# This script creates a conda environment optimized for Blackwell GPUs.
 # ============================================================================
 
 set -e  # Exit on error
 
 echo "=============================================="
 echo "Learning Dynamics LLM - Environment Setup"
+echo "=============================================="
+echo "Detected: NVIDIA RTX PRO 6000 Blackwell (sm_120)"
 echo "=============================================="
 
 # Configuration
@@ -34,6 +36,14 @@ else
     echo "WARNING: nvidia-smi not found. GPU support may not work."
 fi
 
+# Remove existing environment if it exists
+echo ""
+echo "Checking for existing environment..."
+if conda env list | grep -q "^${ENV_NAME} "; then
+    echo "Removing existing ${ENV_NAME} environment..."
+    conda env remove -n ${ENV_NAME} -y
+fi
+
 # Create conda environment
 echo ""
 echo "Creating conda environment: ${ENV_NAME}"
@@ -45,24 +55,44 @@ echo "Activating environment..."
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ${ENV_NAME}
 
-# Install PyTorch with CUDA support
-# For CUDA 12.x (compatible with CUDA 13.0 driver)
+# CRITICAL: Install NumPy < 2.0 first to avoid compatibility issues
 echo ""
-echo "Installing PyTorch with CUDA 12.1 support..."
-pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
+echo "Installing NumPy < 2.0 (required for PyTorch compatibility)..."
+pip install "numpy<2.0"
+
+# Install PyTorch with CUDA 12.6 support for Blackwell (sm_120)
+# PyTorch 2.5+ with CUDA 12.6 is required for Blackwell GPUs
+echo ""
+echo "Installing PyTorch 2.5+ with CUDA 12.6 support (for Blackwell sm_120)..."
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+
+# Verify PyTorch CUDA support for Blackwell
+echo ""
+echo "Verifying PyTorch Blackwell support..."
+python -c "
+import torch
+print(f'PyTorch version: {torch.__version__}')
+print(f'CUDA available: {torch.cuda.is_available()}')
+if torch.cuda.is_available():
+    print(f'CUDA version: {torch.version.cuda}')
+    for i in range(torch.cuda.device_count()):
+        props = torch.cuda.get_device_properties(i)
+        print(f'GPU {i}: {props.name}')
+        print(f'  Compute capability: {props.major}.{props.minor}')
+        print(f'  Memory: {props.total_memory / 1e9:.1f} GB')
+"
 
 # Install core dependencies
 echo ""
 echo "Installing core dependencies..."
-pip install transformers==4.36.2
+pip install transformers==4.46.0
 pip install datasets==2.16.1
-pip install tokenizers==0.15.0
-pip install accelerate==0.25.0
+pip install tokenizers==0.20.0
+pip install accelerate==0.34.0
 
 # Install additional dependencies
 echo ""
 echo "Installing additional dependencies..."
-pip install numpy
 pip install tqdm
 pip install wandb
 pip install hydra-core==1.3.2
@@ -80,7 +110,7 @@ echo ""
 echo "Installing tensor-parallel..."
 pip install tensor-parallel
 
-# Install flash-attention for faster training (optional but recommended)
+# Install flash-attention for faster training (optional but recommended for Blackwell)
 echo ""
 echo "Installing flash-attention (this may take a while)..."
 pip install ninja packaging
@@ -100,10 +130,19 @@ if torch.cuda.is_available():
     print(f'CUDA version: {torch.version.cuda}')
     print(f'GPU count: {torch.cuda.device_count()}')
     for i in range(torch.cuda.device_count()):
-        print(f'  GPU {i}: {torch.cuda.get_device_name(i)}')
-        print(f'    Memory: {torch.cuda.get_device_properties(i).total_memory / 1e9:.1f} GB')
+        props = torch.cuda.get_device_properties(i)
+        print(f'  GPU {i}: {props.name}')
+        print(f'    Compute capability: {props.major}.{props.minor}')
+        print(f'    Memory: {props.total_memory / 1e9:.1f} GB')
+    # Test CUDA tensor allocation
+    try:
+        x = torch.zeros(100, 100).cuda()
+        print('  CUDA tensor test: PASSED')
+    except Exception as e:
+        print(f'  CUDA tensor test: FAILED - {e}')
 "
 
+python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"
 python -c "import transformers; print(f'Transformers version: {transformers.__version__}')"
 python -c "import datasets; print(f'Datasets version: {datasets.__version__}')"
 python -c "import hydra; print(f'Hydra version: {hydra.__version__}')"
@@ -114,7 +153,7 @@ echo "=============================================="
 echo "Environment setup complete!"
 echo "=============================================="
 echo ""
-echo "To activate the environment, run:"
+echo "IMPORTANT: To activate the environment, run:"
 echo "  conda activate ${ENV_NAME}"
 echo ""
 echo "To test GPU memory allocation, run:"
