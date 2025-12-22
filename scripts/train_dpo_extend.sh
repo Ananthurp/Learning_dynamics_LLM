@@ -14,8 +14,8 @@ SFT_CHECKPOINT="qwen18_sft_extend_ep2"  # The SFT extend checkpoint to load
 EXP_NAME="qwen18_dpo_extend_ep6"
 N_EPOCHS=6
 N_EXAMPLES=30000  # 5000 examples per epoch
-BATCH_SIZE=16  # DPO needs policy + reference model, but 97GB VRAM is plenty
-GRADIENT_ACCUMULATION_STEPS=2  # Effective batch = 16 * 2 = 32
+BATCH_SIZE=32  # 97GB VRAM easily handles both policy + reference model
+GRADIENT_ACCUMULATION_STEPS=1  # Effective batch = 32
 EVAL_EVERY=1000
 LR="5e-7"
 BETA=0.1  # DPO beta parameter
