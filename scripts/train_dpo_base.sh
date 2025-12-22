@@ -14,7 +14,8 @@ SFT_CHECKPOINT="qwen18_sft_base_ep2"  # The SFT checkpoint to load
 EXP_NAME="qwen18_dpo_base_ep6"
 N_EPOCHS=6
 N_EXAMPLES=30000  # 5000 examples per epoch
-BATCH_SIZE=2  # Smaller batch for DPO (needs more memory for reference model)
+BATCH_SIZE=16  # DPO needs policy + reference model, but 97GB VRAM is plenty
+GRADIENT_ACCUMULATION_STEPS=2  # Effective batch = 16 * 2 = 32
 EVAL_EVERY=1000
 LR="5e-7"
 BETA=0.1  # DPO beta parameter
@@ -36,6 +37,8 @@ echo "Experiment: ${EXP_NAME}"
 echo "Epochs: ${N_EPOCHS}"
 echo "Examples: ${N_EXAMPLES}"
 echo "Batch Size: ${BATCH_SIZE}"
+echo "Gradient Accumulation: ${GRADIENT_ACCUMULATION_STEPS}"
+echo "Effective Batch Size: $((BATCH_SIZE * GRADIENT_ACCUMULATION_STEPS))"
 echo "DPO Beta: ${BETA}"
 echo "Save at epochs: ${SAVE_EPOCHS}"
 echo "GPU: ${CUDA_VISIBLE_DEVICES}"
@@ -60,6 +63,7 @@ python -u train.py \
     n_epochs=${N_EPOCHS} \
     n_examples=${N_EXAMPLES} \
     batch_size=${BATCH_SIZE} \
+    gradient_accumulation_steps=${GRADIENT_ACCUMULATION_STEPS} \
     eval_every=${EVAL_EVERY} \
     lr=${LR} \
     save_ckp=true \

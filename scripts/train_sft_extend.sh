@@ -13,7 +13,8 @@ MODEL="qwen18"
 EXP_NAME="qwen18_sft_extend_ep2"
 N_EPOCHS=2
 N_EXAMPLES=10000
-BATCH_SIZE=4
+BATCH_SIZE=32
+GRADIENT_ACCUMULATION_STEPS=1  # Effective batch = BATCH_SIZE * GRAD_ACCUM = 32
 EVAL_EVERY=500
 LR="5e-7"
 
@@ -33,6 +34,8 @@ echo "Train Split: train_sft_extend"
 echo "Epochs: ${N_EPOCHS}"
 echo "Examples: ${N_EXAMPLES}"
 echo "Batch Size: ${BATCH_SIZE}"
+echo "Gradient Accumulation: ${GRADIENT_ACCUMULATION_STEPS}"
+echo "Effective Batch Size: $((BATCH_SIZE * GRADIENT_ACCUMULATION_STEPS))"
 echo "GPU: ${CUDA_VISIBLE_DEVICES}"
 echo "=============================================="
 
@@ -45,6 +48,7 @@ python -u train.py \
     n_epochs=${N_EPOCHS} \
     n_examples=${N_EXAMPLES} \
     batch_size=${BATCH_SIZE} \
+    gradient_accumulation_steps=${GRADIENT_ACCUMULATION_STEPS} \
     eval_every=${EVAL_EVERY} \
     lr=${LR} \
     save_ckp=true \
