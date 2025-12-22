@@ -60,11 +60,11 @@ echo ""
 echo "Installing NumPy < 2.0 (required for PyTorch compatibility)..."
 pip install "numpy<2.0"
 
-# Install PyTorch with CUDA 12.6 support for Blackwell (sm_120)
-# PyTorch 2.5+ with CUDA 12.6 is required for Blackwell GPUs
+# Install PyTorch with CUDA 12.8 support for Blackwell (sm_120)
+# Blackwell GPUs require PyTorch nightly with CUDA 12.8+
 echo ""
-echo "Installing PyTorch 2.5+ with CUDA 12.6 support (for Blackwell sm_120)..."
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+echo "Installing PyTorch nightly with CUDA 12.8 support (for Blackwell sm_120)..."
+pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 
 # Verify PyTorch CUDA support for Blackwell
 echo ""
@@ -82,13 +82,13 @@ if torch.cuda.is_available():
         print(f'  Memory: {props.total_memory / 1e9:.1f} GB')
 "
 
-# Install core dependencies
+# Install core dependencies (latest versions for PyTorch nightly compatibility)
 echo ""
 echo "Installing core dependencies..."
-pip install transformers==4.46.0
-pip install datasets==2.16.1
-pip install tokenizers==0.20.0
-pip install accelerate==0.34.0
+pip install transformers
+pip install datasets
+pip install tokenizers
+pip install accelerate
 
 # Install additional dependencies
 echo ""
