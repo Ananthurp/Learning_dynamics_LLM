@@ -14,15 +14,15 @@ SFT_CHECKPOINT="qwen18_sft_extend_ep2"  # The SFT extend checkpoint to load
 EXP_NAME="qwen18_dpo_extend_ep6"
 N_EPOCHS=6
 N_EXAMPLES=30000  # 5000 examples per epoch
-BATCH_SIZE=32  # 97GB VRAM easily handles both policy + reference model
-GRADIENT_ACCUMULATION_STEPS=1  # Effective batch = 32
+BATCH_SIZE=16  # Reduced from 32 to avoid OOM
+GRADIENT_ACCUMULATION_STEPS=1  # Effective batch = 16
 EVAL_EVERY=1000
 LR="5e-7"
 BETA=0.1  # DPO beta parameter
-SAVE_EPOCHS="2,4,6"  # Epochs at which to save checkpoints
+SAVE_EPOCHS="1,2,3,4,5,6"  # Save checkpoint at every epoch
 
 # GPU Configuration
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 # Navigate to source directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
