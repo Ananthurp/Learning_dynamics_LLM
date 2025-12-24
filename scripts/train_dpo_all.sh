@@ -35,7 +35,7 @@ GRADIENT_ACCUMULATION_STEPS=1
 EVAL_EVERY=1000
 LR="5e-7"
 BETA=0.1
-SAVE_EPOCHS="1,2,3,4,5,6"
+SAVE_EPOCHS="[1,2,3,4,5,6]"
 
 echo "=============================================="
 echo "PART 1/2: DPO Base Training"

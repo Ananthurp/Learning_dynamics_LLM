@@ -19,7 +19,7 @@ GRADIENT_ACCUMULATION_STEPS=1  # Effective batch = 16
 EVAL_EVERY=1000
 LR="5e-7"
 BETA=0.1  # DPO beta parameter
-SAVE_EPOCHS="1,2,3,4,5,6"  # Save checkpoint at every epoch
+SAVE_EPOCHS="[1,2,3,4,5,6]"  # Save checkpoint at every epoch
 
 # GPU Configuration
 export CUDA_VISIBLE_DEVICES=0
